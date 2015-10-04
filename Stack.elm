@@ -7,16 +7,8 @@ push: Float -> Stack -> Stack
 push  number stack =
   number :: stack
 
-pop: Stack -> (Float, Stack)
-pop stack =
+pop': Stack -> Maybe (Float, Stack)
+pop' stack =
   case stack of
-    [] -> (0, stack)
-    head::tail -> (head, tail)
-
-calc: Stack -> Operator -> Stack
-calc stack operation =
-  let
-    (val1, stack1) = pop stack
-    (val2, stack2) = pop stack1
-  in
-    push (operation val2 val1) stack2
+    [] -> Nothing
+    head::tail -> Just (head, tail)
