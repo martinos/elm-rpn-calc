@@ -2,6 +2,7 @@ import ElmTest.Test exposing  (..)
 import ElmTest.Assertion exposing (..)
 import ElmTest.Runner.Element exposing (..)
 import RpnCalculator exposing (..)
+import Calculator exposing (..)
 import Graphics.Element exposing (..)
 import String
 import Char
