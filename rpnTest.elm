@@ -45,7 +45,7 @@ tests = suite "My Test Suite"
         , test "When the stack is empty we forbid operations"
             <| assertEntry (Input "3") (initModel |> run "3/")
         , test "After a calculation an new entry pushes the previous result to the stack"
-            <| assertEntry (Input "2") (initModel |> run "23" |> update (Command Backspace))
+            <| assertEntry (Input "2") (initModel |> run "23" |> update (ApplyCommand Backspace))
         --     <| assertEntry (Input "4") (initModel |> run "3/4")
         -- , test "We do an operation when the stack is empty, pressing a number should clean input"
 
@@ -60,13 +60,13 @@ tests = suite "My Test Suite"
         , test "Press <Enter> then a digit: the entry is filled with that number"
             <| assertEntry (Input "3") (initModel |> run "1\r3")
         , test "Backspace erase a digit"
-            <| assertEntry (Input "2") (initModel |> run "23" |> update (Command Backspace))
+            <| assertEntry (Input "2") (initModel |> run "23" |> update (ApplyCommand Backspace))
         , test "<Clear> should clear the stack"
-            <| assertEqual [] (initModel |> run "23" |> update (Command Clear)).stack
+            <| assertEqual [] (initModel |> run "23" |> update (ApplyCommand Clear)).stack
         , test "<Clear> should clear the entry"
-            <| assertEntry (Input "") (initModel |> run "23" |> update (Command Clear))
+            <| assertEntry (Input "") (initModel |> run "23" |> update (ApplyCommand Clear))
         , test "<Swap> the registry"
-            <| assertEntry (Result' 2) (initModel |> run "2\r3" |> update (Command Swap))
+            <| assertEntry (Result' 2) (initModel |> run "2\r3" |> update (ApplyCommand Swap))
         ]
 
 main: Graphics.Element.Element

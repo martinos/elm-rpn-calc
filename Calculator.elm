@@ -3,10 +3,10 @@ module Calculator where
 import Stack exposing (Stack)
 import Debug
 import String
+import Dict exposing (Dict)
 
-type alias Model = { stack: Stack, entry: Entry }
-type alias Operator = Float -> Float -> Float
-type alias OperatorMap = (Char, Operator)
+type alias Model = { stack: Stack, entry: Entry}
+type alias Operation = Float -> Float -> Float
 
 type Command
   = Clear
@@ -19,9 +19,9 @@ type Command
 type Action
   = NoOp
   | InputNumber Char
-  | Operator OperatorMap
-  | Command Command -- Clear Enter Swap Drop Pop
-  | Function String (Float -> Float)
+  | ApplyOperation Operation
+  | ApplyCommand Command -- Clear Enter Swap Drop Pop
+  | ApplyFunction String (Float -> Float)
 
 type Entry
   = Input String
@@ -45,9 +45,9 @@ update action model =
       NoOp -> model
       InputNumber char ->
         model |> updateNumber char
-      Operator (_, operator) ->
+      ApplyOperation operator ->
         model |> applyOperator operator
-      Command command ->
+      ApplyCommand command ->
         case command of
           Backspace -> { model | entry <- deleteChar model.entry }
           Enter ->  model |> push
@@ -79,8 +79,9 @@ regToString register =
     Result' float -> toString float
     Copy float -> toString float
 
--- Operators --
-applyOperator: Operator -> Model -> Model
+-- Operation --
+
+applyOperator: Operation -> Model -> Model
 applyOperator operator model =
   let
     calculate yRegister =
@@ -89,24 +90,20 @@ applyOperator operator model =
       {model| stack <- stack,
               entry <- Result' (calculate yRegister) }
   in
-    (Stack.pop model.stack) `Maybe.andThen`
-                             (\(val, stack) -> Just (update val stack))
-                             |> Maybe.withDefault model
+    (Stack.pop model.stack) |> Maybe.map (uncurry update)
+                            |> Maybe.withDefault model
 
 
-getOperator: Char -> Maybe OperatorMap
-getOperator input =
-  List.filter (\(char, oper) -> input == char) operators |> List.head
 
 isOperator: Char -> Bool
 isOperator char =
-  case getOperator char of
+  case Dict.get char operators of
     Nothing -> False
     Just a -> True
 
-operators: List (OperatorMap)
+operators: Dict Char Operation
 operators =
-  [('+', (+)), ('-', (-)), ('/', (/)), (('*'), (*))]
+  Dict.fromList [('+', (+)), ('-', (-)), ('/', (/)), (('*'), (*))]
 
 -- input --
 

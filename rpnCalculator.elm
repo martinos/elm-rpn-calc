@@ -9,6 +9,7 @@ import Signal exposing ((<~))
 import Maybe
 import Debug
 import Calculator exposing (..)
+import Dict
 
 -- View --
 
@@ -41,13 +42,13 @@ toAction keycode =
     if
       | isNumber keycode -> InputNumber char
       | isOperator char ->
-          case getOperator char of
-            Just oper -> Operator oper
+          case Dict.get char operators of
+            Just oper -> ApplyOperation oper
             Nothing -> NoOp
-      | keycode == backspace -> Command Backspace
-      | keycode == enter -> Command Enter
-      | keycode == escape -> Command Clear
-      | keycode == dollar -> Command Swap
+      | keycode == backspace -> ApplyCommand Backspace
+      | keycode == enter -> ApplyCommand Enter
+      | keycode == escape -> ApplyCommand Clear
+      | keycode == dollar -> ApplyCommand Swap
       | otherwise -> NoOp
 
 isNumber: KeyCode -> Bool
