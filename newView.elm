@@ -42,7 +42,7 @@ keyTextColor = Text.color Color.black
 keyPadBackgroudColor = color <| Color.grayscale 0.40
 
 calcColor = color Color.red
-displayColor = color <| Color.rgb 112 114 117
+displayColor = color <| Color.rgb 118 123 126
 displayTextColor = Text.color Color.white
 
 keyFont: Text -> Text
@@ -92,18 +92,18 @@ stackDisplay model =
   let
     displayData =  (regToString model.entry):: List.map toString model.stack
   in
-    List.map (displayText  >> leftAligned) displayData
+    List.map (displayText  >> rightAligned) displayData
       |> flow up |> stackContainer
 
 keyContent: Signal.Address ViewAction -> List (List (String, Signal.Message))
 keyContent address =
   let
     data =
-      [ [("C", ApplyCommand Clear), ("±", ApplyFunction negate),              ("%", ApplyOperation (percent)),            ("÷", ApplyOperation (/))]
-      , [("7", InputNumber '7'),    ("8", InputNumber '8'),   ("9", InputNumber '9'), ("x", ApplyOperation (*))]
-      , [("4", InputNumber '4'),    ("5", InputNumber '5'),   ("6", InputNumber '6'), ("+", ApplyOperation (+))]
-      , [("1", InputNumber '1'),    ("2", InputNumber '2'),   ("3", InputNumber '3'), ("-", ApplyOperation (-))]
-      , [("0", InputNumber '0'),    ("", NoOp),               (".", InputNumber '.'), ("enter", ApplyCommand Enter)]]
+      [ [("C", ApplyCommand Clear), ("±", ApplyFunction negate) , ("%", ApplyOperation (percent)) , ("÷", ApplyOperation (/))]
+      , [("7", InputNumber '7')   , ("8", InputNumber '8')      , ("9", InputNumber '9')          , ("x", ApplyOperation (*))]
+      , [("4", InputNumber '4')   , ("5", InputNumber '5')      , ("6", InputNumber '6')          , ("+", ApplyOperation (+))]
+      , [("1", InputNumber '1')   , ("2", InputNumber '2')      , ("3", InputNumber '3')          , ("-", ApplyOperation (-))]
+      , [("0", InputNumber '0')   , ("", NoOp)                  , (".", InputNumber '.')          , ("enter", ApplyCommand Enter)]]
     toMsg (str, action) =
       (str, Signal.message address (UL.New action))
     lineConv line =
