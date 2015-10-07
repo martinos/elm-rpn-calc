@@ -30,10 +30,10 @@ type Entry
 
 initModel: Model
 initModel =
-  { stack = [2,3,434], entry = Input ""}
+  { stack = initStack, entry = Input ""}
 
 initStack: Stack
-initStack = [2,3]
+initStack = []
 
 update: Action -> Model -> Model
 update action model =

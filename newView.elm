@@ -55,19 +55,17 @@ keyContent: Signal.Address ViewAction -> List (List (String, Signal.Message))
 keyContent address =
   let
     data =
-      [ [("C", ApplyCommand Clear),            ("±", NoOp),            ("%", NoOp),            ("÷", ApplyOperation (/))]
-      , [("7", InputNumber '7'), ("8", InputNumber '8'), ("9", InputNumber '9'), ("x", ApplyOperation (*))]
-      , [("4", InputNumber '4'), ("5", InputNumber '5'), ("6", InputNumber '6'), ("+", ApplyOperation (+))]
-      , [("1", InputNumber '1'), ("2", InputNumber '2'), ("3", InputNumber '3'), ("-", ApplyOperation (-))]
-      , [("0", InputNumber '0'), ("", NoOp),             (".", InputNumber '.'), ("enter", ApplyCommand Enter)]]
+      [ [("C", ApplyCommand Clear), ("±", NoOp),              ("%", NoOp),            ("÷", ApplyOperation (/))]
+      , [("7", InputNumber '7'),    ("8", InputNumber '8'),   ("9", InputNumber '9'), ("x", ApplyOperation (*))]
+      , [("4", InputNumber '4'),    ("5", InputNumber '5'),   ("6", InputNumber '6'), ("+", ApplyOperation (+))]
+      , [("1", InputNumber '1'),    ("2", InputNumber '2'),   ("3", InputNumber '3'), ("-", ApplyOperation (-))]
+      , [("0", InputNumber '0'),    ("", NoOp),               (".", InputNumber '.'), ("enter", ApplyCommand Enter)]]
     toMsg (str, action) =
       (str, Signal.message address (UL.New action))
     lineConv line =
       List.map toMsg line
   in
     List.map lineConv data
-
-
 
 keys: ActionAddress -> Element
 keys address =
