@@ -7,55 +7,99 @@ import Signal exposing ((<~))
 import Calculator exposing (..)
 import UndoList as UL
 import Color
-import Debug
 
 type alias ViewAction = UL.Action Action
 type alias ActionAddress = Signal.Address ViewAction
--- type alias AppSignal = Signal {future: List Model, past: List Model, present: Model}
--- type alias AppAddress = Signal.Address AppSignal
 
--- dimensions
-calcSize = (calcSizeX, calcSizeY)
-(calcWidth, calcHeight) = calcSize
+-- Configuration --
+
+-- Dimensions
+
+calcSizeX = calcBorder + stackSizeX + calcBorder + commandSizeX + calcBorder
+calcSizeY = calcBorder + stackSizeY + calcBorder + numpadSizeY + calcBorder
 
 keySize = (50, 50)
 (keyWidth, keyHeight) = keySize
 
-keySpace = 2
+keySpace = 1
 keySpacer = spacer keySpace keySpace
 
-numpadSizeX = round (4 * (fst keySize) + 5 * keySpace) |> Debug.log "numpadSizeX"
-numpadSizeY = round (5 * (snd keySize) + 6 * keySpace) |> Debug.log "sizeY"
+numpadSizeX = round (4 * (fst keySize) + 5 * keySpace)
+numpadSizeY = round (5 * (snd keySize) + 6 * keySpace)
 
-calcBorder = 10
+calcBorder = 1
 
-stackSizeY = 90
+stackSizeX = numpadSizeX - commandSizeX - calcBorder
+stackSizeY = commandSizeY
 
-calcSizeX = numpadSizeX + 2 * calcBorder
-calcSizeY = calcBorder + stackSizeY + calcBorder + numpadSizeY + calcBorder
+commandSizeX = keyWidth + 2 * keySpace
+commandSizeY = keySpace + keyHeight + keySpace + keyHeight + keySpace
 
+-- Colors
+
+keyColor = color <| Color.rgb 217 217 217
+keyTextColor = Text.color Color.black
+keyPadBackgroudColor = color <| Color.grayscale 0.40
+
+calcColor = color Color.red
+displayColor = color <| Color.rgb 112 114 117
+displayTextColor = Text.color Color.white
+
+keyFont: Text -> Text
+keyFont =
+  Text.typeface [ "Roboto-Regular", "helvetica", "arial", "sans-serif"]
 
 view: Signal.Address ViewAction -> Model -> Element
 view address model =
-  display address model
-
+    display address model
 
 display: Signal.Address ViewAction -> Model -> Element
 display address model =
-  [ spacer 10 10
-  , stackDisplay model
-  , spacer 10 10
-  , numpadContainer (keys address)]|> flow down |> mainContainer
+  [ spacer calcBorder calcBorder
+  , [spacer calcBorder calcBorder, stackDisplay model, spacer calcBorder calcBorder, commandKeys address |> commandContainer] |> flow right
+  , spacer calcBorder calcBorder
+  , [spacer calcBorder calcBorder, numpadContainer (keys address)] |> flow right]|> flow down |> mainContainer
+
+mainContainer: Element -> Element
+mainContainer  =
+  container calcSizeX calcSizeY topLeft >> calcColor
+
+commandContainer: Element -> Element
+commandContainer =
+  container commandSizeX commandSizeY topLeft >> keyPadBackgroudColor
+
+commandKeys: Signal.Address ViewAction -> Element
+commandKeys address =
+  [ keySpacer
+  , key ("swap", Signal.message address (UL.New (ApplyCommand Swap)))
+  , keySpacer
+  , key ("drop", Signal.message address (UL.New (ApplyCommand Drop)))] |> flow down
 
 numpadContainer: Element -> Element
 numpadContainer =
-  container numpadSizeX numpadSizeY topLeft >> color Color.green
+  container numpadSizeX numpadSizeY topLeft >> keyPadBackgroudColor
+
+stackContainer: Element -> Element
+stackContainer =
+  container stackSizeX stackSizeY bottomLeft >> displayColor
+
+displayText: String -> Text
+displayText =
+  Text.fromString >> keyFont >> displayTextColor
+
+stackDisplay: Model -> Element
+stackDisplay model =
+  let
+    displayData =  (regToString model.entry):: List.map toString model.stack
+  in
+    List.map (displayText  >> leftAligned) displayData
+      |> flow up |> stackContainer
 
 keyContent: Signal.Address ViewAction -> List (List (String, Signal.Message))
 keyContent address =
   let
     data =
-      [ [("C", ApplyCommand Clear), ("±", NoOp),              ("%", NoOp),            ("÷", ApplyOperation (/))]
+      [ [("C", ApplyCommand Clear), ("±", ApplyFunction negate),              ("%", ApplyOperation (percent)),            ("÷", ApplyOperation (/))]
       , [("7", InputNumber '7'),    ("8", InputNumber '8'),   ("9", InputNumber '9'), ("x", ApplyOperation (*))]
       , [("4", InputNumber '4'),    ("5", InputNumber '5'),   ("6", InputNumber '6'), ("+", ApplyOperation (+))]
       , [("1", InputNumber '1'),    ("2", InputNumber '2'),   ("3", InputNumber '3'), ("-", ApplyOperation (-))]
@@ -69,37 +113,17 @@ keyContent address =
 
 keys: ActionAddress -> Element
 keys address =
-  keySpacer :: (List.map row (keyContent address) |> List.intersperse keySpacer) |> flow down
+  keySpacer :: (List.map numRow (keyContent address) |> List.intersperse keySpacer) |> flow down
 
-row content =
+numRow content =
   ( keySpacer
     :: (List.map key content |> List.intersperse keySpacer))
     ++ [keySpacer]|> flow right
 
+keyText: String -> Text
+keyText =
+  Text.fromString >> keyFont >> keyTextColor
+
 key: (String, Signal.Message) -> Element
 key (text, message) =
-  text |> textElem |> container keyWidth keyHeight middle |> color Color.blue |> clickable message
-
-mainContainer: Element -> Element
-mainContainer  =
-  container calcWidth calcHeight midTop >> color Color.red
-
-stackContainer: Element -> Element
-stackContainer =
-  container numpadSizeX stackSizeY bottomLeft >> color Color.blue
-
-textElem: String -> Element
-textElem =
-  Text.fromString >> Text.color Color.white >> calcFont >> leftAligned
-
-stackDisplay: Model -> Element
-stackDisplay model =
-  let
-    displayData =  (regToString model.entry):: List.map toString model.stack
-  in
-    List.map (textElem) displayData
-      |> flow up |> stackContainer
-
-calcFont: Text -> Text
-calcFont =
-  Text.typeface [ "Roboto-Regular", "helvetica", "arial", "sans-serif"]
+  text |> keyText >> leftAligned |> container keyWidth keyHeight middle |> keyColor |> clickable message

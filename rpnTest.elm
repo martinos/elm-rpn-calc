@@ -46,8 +46,6 @@ tests = suite "My Test Suite"
             <| assertEntry (Input "3") (initModel |> run "3/")
         , test "After a calculation an new entry pushes the previous result to the stack"
             <| assertEntry (Input "2") (initModel |> run "23" |> update (ApplyCommand Backspace))
-        --     <| assertEntry (Input "4") (initModel |> run "3/4")
-        -- , test "We do an operation when the stack is empty, pressing a number should clean input"
 
         -- Commands
 
@@ -67,6 +65,15 @@ tests = suite "My Test Suite"
             <| assertEntry (Input "") (initModel |> run "23" |> update (ApplyCommand Clear))
         , test "<Swap> the registry"
             <| assertEntry (Result' 2) (initModel |> run "2\r3" |> update (ApplyCommand Swap))
+        , test "<Drop> the registry"
+            <| assertEntry (Result' 2) (initModel |> run "2\r3" |> update (ApplyCommand Drop))
+
+
+        -- functions
+
+        , test "function should ouput result"
+            <| assertEntry (Result' -2) (initModel |> run "2" |> update (ApplyFunction negate))
+
         ]
 
 main: Graphics.Element.Element

@@ -21,7 +21,7 @@ type Action
   | InputNumber Char
   | ApplyOperation Operation
   | ApplyCommand Command -- Clear Enter Swap Drop Pop
-  | ApplyFunction String (Float -> Float)
+  | ApplyFunction (Float -> Float)
 
 type Entry
   = Input String
@@ -53,12 +53,18 @@ update action model =
           Enter ->  model |> push
           Clear -> model |> clear
           Swap -> model |> swap
+          Drop -> model |> drop
+
+      ApplyFunction function ->
+        {model| entry <- Result' (function (toFloat model.entry))}
     |> Debug.watch "Model"
 
 push: Model -> Model
 push model =
   {model| stack <- Stack.push (toFloat model.entry) model.stack
         , entry <- Copy (toFloat model.entry)}
+
+
 
 clear: Model -> Model
 clear model =
@@ -71,6 +77,15 @@ swap model =
     Just (registry, stack) ->
       {model| entry <- Result' registry
             , stack <- Stack.push (toFloat model.entry) stack}
+
+drop: Model -> Model
+drop model =
+  case Stack.pop model.stack of
+    Nothing -> {model| entry <- Result' 0}
+    Just (registry, stack) ->
+      {model| entry <- Result' registry
+            , stack <- stack}
+
 
 regToString: Entry -> String
 regToString register =
@@ -93,8 +108,6 @@ applyOperator operator model =
     (Stack.pop model.stack) |> Maybe.map (uncurry update)
                             |> Maybe.withDefault model
 
-
-
 isOperator: Char -> Bool
 isOperator char =
   case Dict.get char operators of
@@ -105,6 +118,9 @@ operators: Dict Char Operation
 operators =
   Dict.fromList [('+', (+)), ('-', (-)), ('/', (/)), (('*'), (*))]
 
+percent: Float -> Float -> Float
+percent number percent =
+  number * percent / 100
 -- input --
 
 updateNumber: Char -> Model -> Model
