@@ -30,7 +30,7 @@ type Entry
 
 initModel: Model
 initModel =
-  { stack = [], entry = Input ""}
+  { stack = [2,3,434], entry = Input ""}
 
 initStack: Stack
 initStack = [2,3]

@@ -2,7 +2,6 @@ module RpnCalculator where
 
 -- In javascrip https://gist.github.com/b016fae84bd52d6d1a31
 
-import Html exposing (..)
 import Keyboard exposing (KeyCode)
 import Char
 import Signal exposing ((<~))
@@ -10,25 +9,9 @@ import Maybe
 import Debug
 import Calculator exposing (..)
 import Dict
-
--- View --
-
-view: Model -> Html
-view model =
-  ul []
-     (regElem model.entry :: List.map recordElem model.stack |> List.reverse)
-
-recordElem: Float -> Html
-recordElem num =
-  li []
-     [text <| toString num]
-
-regElem: Entry -> Html
-regElem reg =
-  li []
-     [text <| regToString reg]
-
--- Signal ---
+import UndoList as UL
+import Graphics.Element exposing (..)
+import NewView
 
 toAction: KeyCode -> Action
 toAction keycode =
@@ -62,9 +45,24 @@ numberKeyCodes =
 keyboard: Signal KeyCode
 keyboard = Keyboard.presses
 
-loggedAction: KeyCode -> Action
+loggedAction: KeyCode -> Calculator.Action
 loggedAction =
   Debug.log "Action" << toAction << Debug.log "Keycode"
 
-main: Signal Html
-main = view <~ (Signal.foldp update initModel (loggedAction <~ keyboard))
+-- Signals
+
+ulSignal: Signal.Mailbox (UL.Action Action)
+ulSignal = Signal.mailbox (UL.New NoOp)
+
+inputSignal: Signal (UL.Action Action)
+inputSignal = Signal.merge ulSignal.signal (UL.New <~ (loggedAction <~ keyboard))
+
+appSignal: AppSignal
+appSignal =
+  (Signal.foldp (UL.update update) (UL.fresh initModel) inputSignal)
+
+type alias AppSignal = Signal {future: List Model, past: List Model, present: Model}
+type alias AppAddress = Signal.Address AppSignal
+
+main: Signal Element
+main = (UL.view NewView.view ulSignal.address) <~ appSignal

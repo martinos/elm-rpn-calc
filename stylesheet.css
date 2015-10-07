@@ -1,0 +1,13 @@
+ul
+{
+    list-style-type: none;
+    height:5em; width:18%;
+    overflow:hidden; overflow-y:scroll;
+    bottom:0;
+}
+button.coco {
+  /*padding: .5em;
+  margin: .1em;*/
+  width: 5em;
+  height: 1em;
+}
