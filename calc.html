@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Rpn Calculator</title>
+  <script type="text/javascript" src="elm.js"></script>
+  <!-- <link rel="stylesheet" href="http://cdn.foundation5.zurb.com/foundation.css"> -->
+  <style>
+  .main {
+    width: 100%;
+    text-align: center;
+  }
+
+  #container {
+    display: inline-block;
+  }
+  </style>
+
+</head>
+<body>
+  <div class="main">
+    <div id="container">
+    </div>
+  </div>
+</body>
+    <script type="text/javascript">
+    var stamperDiv = document.getElementById('container');
+
+    var app = Elm.embed(Elm.RpnCalculator, stamperDiv);
+    </script>
+</html>
