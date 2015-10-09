@@ -10,7 +10,7 @@ import Debug
 import Calculator exposing (..)
 import Dict
 import Graphics.Element exposing (..)
-import NewView
+import View
 
 toAction: KeyCode -> Action
 toAction keycode =
@@ -61,4 +61,4 @@ appSignal =
   Signal.foldp update initModel inputSignal
 
 main: Signal Element
-main = NewView.view actions.address <~ appSignal
+main = View.view actions.address <~ appSignal

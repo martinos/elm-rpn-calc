@@ -1,4 +1,4 @@
-module NewView where
+module View where
 
 import Text exposing (Text)
 import Graphics.Element exposing (..)
