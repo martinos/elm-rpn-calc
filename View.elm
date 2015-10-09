@@ -6,6 +6,7 @@ import Graphics.Input exposing (..)
 import Signal exposing ((<~))
 import Calculator exposing (..)
 import Color
+import Debug
 
 type alias ActionAddress = Signal.Address Action
 
@@ -13,7 +14,7 @@ type alias ActionAddress = Signal.Address Action
 
 -- Dimensions
 
-calcSizeX = calcBorder + stackSizeX + calcBorder + commandSizeX + calcBorder
+calcSizeX = (calcBorder + numpadSizeX + calcBorder)
 calcSizeY = calcBorder + stackSizeY + calcBorder + numpadSizeY + calcBorder
 
 keySize = (50, 50)
@@ -22,17 +23,17 @@ keySize = (50, 50)
 keySpace = 1
 keySpacer = spacer keySpace keySpace
 
-numpadSizeX = round (4 * (fst keySize) + 5 * keySpace)
-numpadSizeY = round (5 * (snd keySize) + 6 * keySpace)
+numpadSizeX = round (4 * (fst keySize) + 3 * keySpace) |> Debug.log "numpadSizeX"
+numpadSizeY = round (5 * (snd keySize) + 4 * keySpace)
 
-calcBorder = 1
+calcBorder = 2
 calcBorderSpacer = spacer calcBorder calcBorder
 
-stackSizeX = numpadSizeX - commandSizeX - calcBorder
+stackSizeX = (calcSizeX  |> Debug.log "calcSizeX" )- commandSizeX - 2 * calcBorder - keySpace
 stackSizeY = commandSizeY
 
-commandSizeX = keyWidth + 2 * keySpace
-commandSizeY = keySpace + keyHeight + keySpace + keyHeight + keySpace
+commandSizeX = keyWidth
+commandSizeY = keyHeight + keySpace + keyHeight
 
 -- Colors
 
@@ -41,7 +42,9 @@ keyTextColor = Text.color Color.black
 keyPadBackgroudColor = color <| Color.grayscale 0.40
 
 calcColor = color Color.red
-displayColor = color <| Color.rgb 118 123 126
+displaySeparatorColor = color <| Color.white
+displayBackgroudColor = color <| Color.rgb 118 123 126
+
 displayTextColor = Text.color Color.white
 
 keyFont: Text -> Text
@@ -54,7 +57,7 @@ keyFont =
 
 view: Signal.Address Action -> Model -> Element
 view address model =
-  [ [stackDisplay model, calcBorderSpacer, commandKeys address] |> flow right
+  [ [stackDisplay model, keySpacer, commandKeys address] |> flow right
   , calcBorderSpacer
   , numpadContainer (keys address)
   ] |> flow down |> mainContainer
@@ -63,7 +66,7 @@ mainContainer: Element -> Element
 mainContainer  =
   container calcSizeX calcSizeY middle >> calcColor
 
--- COMAND KEYS --
+-- COMMAND KEYS --
 
 commandContainer: Element -> Element
 commandContainer =
@@ -71,10 +74,9 @@ commandContainer =
 
 commandKeys: Signal.Address Action -> Element
 commandKeys address =
-  [ keySpacer
-  , key ("swap", Signal.message address (ApplyCommand Swap))
+  [ key ("swap", Signal.message address (ApplyCommand Swap))
   , keySpacer
-  , key ("drop", Signal.message address (ApplyCommand Drop))] |> flow down
+  , key ("drop", Signal.message address (ApplyCommand Drop))] |> flow up
 
 -- STACK CONTAINER --
 
@@ -83,16 +85,15 @@ stackDisplay model =
   let
     displayData =  (regToString model.entry):: List.map toString model.stack
   in
-    List.map register displayData
-      |> flow up |> stackContainer
+    List.map register displayData |> List.intersperse (spacer stackSizeX keySpace |> keyPadBackgroudColor) |> flow up |> stackContainer
 
 stackContainer: Element -> Element
 stackContainer =
-  container stackSizeX stackSizeY bottomLeft >> displayColor
+  container stackSizeX stackSizeY bottomLeft >> displayBackgroudColor
 
 register: String -> Element
 register text =
-  [spacer 5 1, displayText text |> rightAligned] |> flow right
+  spacer 5 5 `beside` (displayText text |> rightAligned) |> container stackSizeX 25 midLeft |> displayBackgroudColor
 
 displayText: String -> Text
 displayText =
@@ -106,13 +107,13 @@ numpadContainer =
 
 keys: ActionAddress -> Element
 keys address =
-  keySpacer :: (List.map numRow (keyContent address) |> List.intersperse keySpacer) |> flow down
+  List.map numRow (keyContent address) |> List.intersperse keySpacer |> flow down
 
 keyContent: Signal.Address Action -> List (List (String, Signal.Message))
 keyContent address =
   let
     data =
-      [ [("C", ApplyCommand Clear), ("±", ApplyFunction negate) , ("%", ApplyOperation (percent)) , ("÷", ApplyOperation (/))]
+      [ [("C", ApplyCommand Clear), ("±", ApplyFunction negate) , ("%", ApplyOperation percent)   , ("÷", ApplyOperation (/))]
       , [("7", InputNumber '7')   , ("8", InputNumber '8')      , ("9", InputNumber '9')          , ("x", ApplyOperation (*))]
       , [("4", InputNumber '4')   , ("5", InputNumber '5')      , ("6", InputNumber '6')          , ("+", ApplyOperation (+))]
       , [("1", InputNumber '1')   , ("2", InputNumber '2')      , ("3", InputNumber '3')          , ("-", ApplyOperation (-))]
@@ -126,9 +127,7 @@ keyContent address =
 
 numRow: List (String, Signal.Message) -> Element
 numRow content =
-  ( keySpacer
-    :: (List.map key content |> List.intersperse keySpacer))
-    ++ [keySpacer]|> flow right
+  List.map key content |> List.intersperse keySpacer |> flow right
 
 keyText: String -> Text
 keyText =
