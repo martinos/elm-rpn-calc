@@ -5,7 +5,7 @@ import Debug
 import String
 import Dict exposing (Dict)
 
-type alias Model = { stack: Stack, entry: Entry}
+type alias Model = { stack: Stack, entry: Entry }
 type alias Operation = Float -> Float -> Float
 
 type Command
@@ -59,12 +59,51 @@ update action model =
         {model| entry <- Result' (function (toFloat model.entry))}
     |> Debug.watch "Model"
 
+-- input --
+
+updateNumber: Char -> Model -> Model
+updateNumber digit model =
+  case model.entry of
+    Input string -> {model | entry <- Input (string |> prepend0ToTrailingDot digit |> appendDigit digit)}
+    Result' number -> {model | stack <- Stack.push number model.stack
+                             , entry <- Input ""} |> updateNumber digit
+    Copy number -> {model | entry <- Input ""} |> updateNumber digit
+
+
+prepend0ToTrailingDot: Char -> String -> String
+prepend0ToTrailingDot digit numberStr =
+  if  digit == '.' && String.isEmpty numberStr then
+    "0"
+  else
+    numberStr
+
+appendDigit: Char -> String -> String
+appendDigit digit numberStr =
+  if digit == '.' && String.contains (String.fromChar digit) numberStr then
+    numberStr
+  else
+    numberStr ++ (String.fromChar digit)
+
+toFloat: Entry -> Float
+toFloat register =
+  case register of
+    Input string -> Result.toMaybe (String.toFloat string) |> Maybe.withDefault 0.0
+    Result' float -> float
+    Copy float -> float
+
+-- Commands --
+
+deleteChar: Entry -> Entry
+deleteChar register =
+  case register of
+    Input string -> Input <| String.slice 0 -1 string
+    Result' float -> register
+    Copy float -> register
+
 push: Model -> Model
 push model =
   {model| stack <- Stack.push (toFloat model.entry) model.stack
         , entry <- Copy (toFloat model.entry)}
-
-
 
 clear: Model -> Model
 clear model =
@@ -85,7 +124,6 @@ drop model =
     Just (registry, stack) ->
       {model| entry <- Result' registry
             , stack <- stack}
-
 
 regToString: Entry -> String
 regToString register =
@@ -121,41 +159,3 @@ operators =
 percent: Float -> Float -> Float
 percent number percent =
   number * percent / 100
--- input --
-
-updateNumber: Char -> Model -> Model
-updateNumber digit model =
-  case model.entry of
-    Input string -> {model | entry <- Input (string |> prepend0ToTrailingDot digit |> appendDigit digit)}
-    Result' number -> {model | stack <- Stack.push number model.stack
-                             , entry <- Input ""} |> updateNumber digit
-    Copy number -> {model | entry <- Input ""} |> updateNumber digit
-
-
-prepend0ToTrailingDot: Char -> String -> String
-prepend0ToTrailingDot digit numberStr =
-  if  digit == '.' && String.isEmpty numberStr then
-    "0"
-  else
-    numberStr
-
-appendDigit: Char -> String -> String
-appendDigit digit numberStr =
-  if digit == '.' && String.contains (String.fromChar digit) numberStr then
-    numberStr
-  else
-    numberStr ++ (String.fromChar digit)
-
-toFloat: Entry -> Float
-toFloat register =
-  case register of
-    Input string -> Result.toMaybe (String.toFloat string) |> Maybe.withDefault 0.0
-    Result' float -> float
-    Copy float -> float
-
-deleteChar: Entry -> Entry
-deleteChar register =
-  case register of
-    Input string -> Input <| String.slice 0 -1 string
-    Result' float -> register
-    Copy float -> register

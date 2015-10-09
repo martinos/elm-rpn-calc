@@ -68,7 +68,6 @@ tests = suite "My Test Suite"
         , test "<Drop> the registry"
             <| assertEntry (Result' 2) (initModel |> run "2\r3" |> update (ApplyCommand Drop))
 
-
         -- functions
 
         , test "function should ouput result"

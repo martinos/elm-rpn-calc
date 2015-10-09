@@ -9,7 +9,6 @@ import Maybe
 import Debug
 import Calculator exposing (..)
 import Dict
-import UndoList as UL
 import Graphics.Element exposing (..)
 import NewView
 
@@ -51,18 +50,15 @@ loggedAction =
 
 -- Signals
 
-ulSignal: Signal.Mailbox (UL.Action Action)
-ulSignal = Signal.mailbox (UL.New NoOp)
+actions: Signal.Mailbox Action
+actions = Signal.mailbox NoOp
 
-inputSignal: Signal (UL.Action Action)
-inputSignal = Signal.merge ulSignal.signal (UL.New <~ (loggedAction <~ keyboard))
+inputSignal: Signal Action
+inputSignal = Signal.merge actions.signal (loggedAction <~ keyboard)
 
-appSignal: AppSignal
+appSignal: Signal Model
 appSignal =
-  (Signal.foldp (UL.update update) (UL.fresh initModel) inputSignal)
-
-type alias AppSignal = Signal {future: List Model, past: List Model, present: Model}
-type alias AppAddress = Signal.Address AppSignal
+  Signal.foldp update initModel inputSignal
 
 main: Signal Element
-main = (UL.view NewView.view ulSignal.address) <~ appSignal
+main = NewView.view actions.address <~ appSignal

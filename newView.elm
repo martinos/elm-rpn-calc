@@ -5,13 +5,11 @@ import Graphics.Element exposing (..)
 import Graphics.Input exposing (..)
 import Signal exposing ((<~))
 import Calculator exposing (..)
-import UndoList as UL
 import Color
 
-type alias ViewAction = UL.Action Action
-type alias ActionAddress = Signal.Address ViewAction
+type alias ActionAddress = Signal.Address Action
 
--- Configuration --
+-- CONFIGURATION --
 
 -- Dimensions
 
@@ -28,6 +26,7 @@ numpadSizeX = round (4 * (fst keySize) + 5 * keySpace)
 numpadSizeY = round (5 * (snd keySize) + 6 * keySpace)
 
 calcBorder = 1
+calcBorderSpacer = spacer calcBorder calcBorder
 
 stackSizeX = numpadSizeX - commandSizeX - calcBorder
 stackSizeY = commandSizeY
@@ -49,53 +48,67 @@ keyFont: Text -> Text
 keyFont =
   Text.typeface [ "Roboto-Regular", "helvetica", "arial", "sans-serif"]
 
-view: Signal.Address ViewAction -> Model -> Element
-view address model =
-    display address model
+----------
+-- VIEW --
+----------
 
-display: Signal.Address ViewAction -> Model -> Element
-display address model =
-  [ spacer calcBorder calcBorder
-  , [spacer calcBorder calcBorder, stackDisplay model, spacer calcBorder calcBorder, commandKeys address |> commandContainer] |> flow right
-  , spacer calcBorder calcBorder
-  , [spacer calcBorder calcBorder, numpadContainer (keys address)] |> flow right]|> flow down |> mainContainer
+view: Signal.Address Action -> Model -> Element
+view address model =
+  [ [stackDisplay model, calcBorderSpacer, commandKeys address] |> flow right
+  , calcBorderSpacer
+  , numpadContainer (keys address)
+  ] |> flow down |> mainContainer
 
 mainContainer: Element -> Element
 mainContainer  =
-  container calcSizeX calcSizeY topLeft >> calcColor
+  container calcSizeX calcSizeY middle >> calcColor
+
+-- COMAND KEYS --
 
 commandContainer: Element -> Element
 commandContainer =
   container commandSizeX commandSizeY topLeft >> keyPadBackgroudColor
 
-commandKeys: Signal.Address ViewAction -> Element
+commandKeys: Signal.Address Action -> Element
 commandKeys address =
   [ keySpacer
-  , key ("swap", Signal.message address (UL.New (ApplyCommand Swap)))
+  , key ("swap", Signal.message address (ApplyCommand Swap))
   , keySpacer
-  , key ("drop", Signal.message address (UL.New (ApplyCommand Drop)))] |> flow down
+  , key ("drop", Signal.message address (ApplyCommand Drop))] |> flow down
 
-numpadContainer: Element -> Element
-numpadContainer =
-  container numpadSizeX numpadSizeY topLeft >> keyPadBackgroudColor
-
-stackContainer: Element -> Element
-stackContainer =
-  container stackSizeX stackSizeY bottomLeft >> displayColor
-
-displayText: String -> Text
-displayText =
-  Text.fromString >> keyFont >> displayTextColor
+-- STACK CONTAINER --
 
 stackDisplay: Model -> Element
 stackDisplay model =
   let
     displayData =  (regToString model.entry):: List.map toString model.stack
   in
-    List.map (displayText  >> rightAligned) displayData
+    List.map register displayData
       |> flow up |> stackContainer
 
-keyContent: Signal.Address ViewAction -> List (List (String, Signal.Message))
+stackContainer: Element -> Element
+stackContainer =
+  container stackSizeX stackSizeY bottomLeft >> displayColor
+
+register: String -> Element
+register text =
+  [spacer 5 1, displayText text |> rightAligned] |> flow right
+
+displayText: String -> Text
+displayText =
+  Text.fromString >> keyFont >> displayTextColor
+
+-- NUM PAD --
+
+numpadContainer: Element -> Element
+numpadContainer =
+  container numpadSizeX numpadSizeY topLeft >> keyPadBackgroudColor
+
+keys: ActionAddress -> Element
+keys address =
+  keySpacer :: (List.map numRow (keyContent address) |> List.intersperse keySpacer) |> flow down
+
+keyContent: Signal.Address Action -> List (List (String, Signal.Message))
 keyContent address =
   let
     data =
@@ -105,16 +118,13 @@ keyContent address =
       , [("1", InputNumber '1')   , ("2", InputNumber '2')      , ("3", InputNumber '3')          , ("-", ApplyOperation (-))]
       , [("0", InputNumber '0')   , ("", NoOp)                  , (".", InputNumber '.')          , ("enter", ApplyCommand Enter)]]
     toMsg (str, action) =
-      (str, Signal.message address (UL.New action))
+      (str, Signal.message address action)
     lineConv line =
       List.map toMsg line
   in
     List.map lineConv data
 
-keys: ActionAddress -> Element
-keys address =
-  keySpacer :: (List.map numRow (keyContent address) |> List.intersperse keySpacer) |> flow down
-
+numRow: List (String, Signal.Message) -> Element
 numRow content =
   ( keySpacer
     :: (List.map key content |> List.intersperse keySpacer))

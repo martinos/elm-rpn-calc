@@ -5,20 +5,14 @@
   <meta charset="UTF-8">
   <title>Rpn Calculator</title>
   <script type="text/javascript" src="elm.js"></script>
-  <!-- <link rel="stylesheet" href="http://cdn.foundation5.zurb.com/foundation.css"> -->
-  <style>
-  .main {
-    width: 100%;
-    text-align: center;
-  }
+  <script type="text/javascript" src="https://code.jquery.com/jquery-git2.min.js"></script>
 
-  #container {
-    display: inline-block;
-  }
-  </style>
-
+  <link rel="stylesheet" href="stylesheet.css">
 </head>
 <body>
+  <div class="spacer">
+
+  </div>
   <div class="main">
     <div id="container">
     </div>
@@ -28,5 +22,12 @@
     var stamperDiv = document.getElementById('container');
 
     var app = Elm.embed(Elm.RpnCalculator, stamperDiv);
+    </script>
+    <script>
+    $(document).on("keydown", function (e) {
+        if (e.which === 8 && !$(e.target).is("input, textarea")) {
+            e.preventDefault();
+        }
+    });
     </script>
 </html>

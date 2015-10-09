@@ -2,8 +2,10 @@
   width: 100%;
   text-align: center;
 }
+.spacer {
+  height: 100px;
+}
 
 #container {
   display: inline-block;
 }
-
