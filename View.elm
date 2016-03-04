@@ -3,7 +3,7 @@ module View where
 import Text exposing (Text)
 import Graphics.Element exposing (..)
 import Graphics.Input exposing (..)
-import Signal exposing ((<~))
+import Signal 
 import Calculator exposing (..)
 import Color
 import Debug

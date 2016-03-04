@@ -49,14 +49,15 @@ update action model =
         model |> applyOperator operator
       ApplyCommand command ->
         case command of
-          Backspace -> { model | entry <- deleteChar model.entry }
+          Backspace -> { model | entry = deleteChar model.entry }
           Enter ->  model |> push
           Clear -> model |> clear
           Swap -> model |> swap
           Drop -> model |> drop
+          Erase -> model 
 
       ApplyFunction function ->
-        {model| entry <- Result' (function (toFloat model.entry))}
+        {model| entry = Result' (function (toFloat model.entry))}
     |> Debug.watch "Model"
 
 -- input --
@@ -64,10 +65,10 @@ update action model =
 updateNumber: Char -> Model -> Model
 updateNumber digit model =
   case model.entry of
-    Input string -> {model | entry <- Input (string |> prepend0ToTrailingDot digit |> appendDigit digit)}
-    Result' number -> {model | stack <- Stack.push number model.stack
-                             , entry <- Input ""} |> updateNumber digit
-    Copy number -> {model | entry <- Input ""} |> updateNumber digit
+    Input string -> {model | entry =  Input (string |> prepend0ToTrailingDot digit |> appendDigit digit)}
+    Result' number -> {model | stack = Stack.push number model.stack
+                             , entry = Input ""} |> updateNumber digit
+    Copy number -> {model | entry = Input ""} |> updateNumber digit
 
 
 prepend0ToTrailingDot: Char -> String -> String
@@ -102,28 +103,28 @@ deleteChar register =
 
 push: Model -> Model
 push model =
-  {model| stack <- Stack.push (toFloat model.entry) model.stack
-        , entry <- Copy (toFloat model.entry)}
+  {model| stack = Stack.push (toFloat model.entry) model.stack
+        , entry = Copy (toFloat model.entry)}
 
 clear: Model -> Model
 clear model =
-  {model| entry <- Input "",stack <- []}
+  {model| entry = Input "",stack = []}
 
 swap: Model -> Model
 swap model =
   case Stack.pop model.stack of
     Nothing -> model
     Just (registry, stack) ->
-      {model| entry <- Result' registry
-            , stack <- Stack.push (toFloat model.entry) stack}
+      {model| entry = Result' registry
+            , stack = Stack.push (toFloat model.entry) stack}
 
 drop: Model -> Model
 drop model =
   case Stack.pop model.stack of
-    Nothing -> {model| entry <- Result' 0}
+    Nothing -> {model| entry = Result' 0}
     Just (registry, stack) ->
-      {model| entry <- Result' registry
-            , stack <- stack}
+      {model| entry = Result' registry
+            , stack = stack}
 
 regToString: Entry -> String
 regToString register =
@@ -140,8 +141,8 @@ applyOperator operator model =
     calculate yRegister =
       operator yRegister <| toFloat model.entry
     update yRegister stack =
-      {model| stack <- stack,
-              entry <- Result' (calculate yRegister) }
+      {model| stack = stack,
+              entry = Result' (calculate yRegister) }
   in
     (Stack.pop model.stack) |> Maybe.map (uncurry update)
                             |> Maybe.withDefault model

@@ -1,10 +1,11 @@
 module RpnCalculator where
 
--- In javascrip https://gist.github.com/b016fae84bd52d6d1a31
+-- In javascript https://gist.github.com/b016fae84bd52d6d1a31
 
-import Keyboard exposing (KeyCode)
+import Char exposing (KeyCode)
+import Keyboard
 import Char
-import Signal exposing ((<~))
+import Signal
 import Maybe
 import Debug
 import Calculator exposing (..)
@@ -21,17 +22,16 @@ toAction keycode =
     dollar = Char.toCode '$'
     char = Char.fromCode keycode
   in
-    if
-      | isNumber keycode -> InputNumber char
-      | isOperator char ->
+    if isNumber keycode then InputNumber char
+    else if isOperator char then
           case Dict.get char operators of
             Just oper -> ApplyOperation oper
             Nothing -> NoOp
-      | keycode == backspace -> ApplyCommand Backspace
-      | keycode == enter -> ApplyCommand Enter
-      | keycode == escape -> ApplyCommand Clear
-      | keycode == dollar -> ApplyCommand Swap
-      | otherwise -> NoOp
+    else if keycode == backspace then ApplyCommand Backspace
+    else if  keycode == enter then ApplyCommand Enter 
+    else if keycode == escape then ApplyCommand Clear 
+    else if keycode == dollar then  ApplyCommand Swap 
+    else  NoOp
 
 isNumber: KeyCode -> Bool
 isNumber keycode =
@@ -54,11 +54,11 @@ actions: Signal.Mailbox Action
 actions = Signal.mailbox NoOp
 
 inputSignal: Signal Action
-inputSignal = Signal.merge actions.signal (loggedAction <~ keyboard)
+inputSignal = Signal.merge actions.signal ( keyboard |> Signal.map loggedAction)
 
 appSignal: Signal Model
 appSignal =
   Signal.foldp update initModel inputSignal
 
 main: Signal Element
-main = View.view actions.address <~ appSignal
+main = appSignal |> Signal.map (View.view actions.address)
