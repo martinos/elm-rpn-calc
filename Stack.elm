@@ -1,14 +1,21 @@
-module  Stack where
-
-type alias Stack = List Float
+module Stack (..) where
 
 
-push: Float -> Stack -> Stack
-push  number stack =
+type alias Stack =
+  List Float
+
+
+push : Float -> Stack -> Stack
+push number stack =
   number :: stack
 
-pop: Stack -> Maybe (Float, Stack)
+
+pop : Stack -> Maybe ( Float, Stack )
 pop stack =
   case stack of
-    [] -> Nothing
-    head::tail -> Just (head, tail)
+    [] ->
+      Nothing
+
+    head :: tail ->
+      Just ( head, tail )
+
