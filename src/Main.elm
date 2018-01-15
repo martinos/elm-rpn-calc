@@ -77,7 +77,7 @@ body model =
             ]
         , row None
             [ spacing keySpacing ]
-            [ button "0" (InputNumber '7')
+            [ button "0" (InputNumber '0')
             , button "" NoOp
             , button "." (InputNumber '.')
             , button "Enter" (ApplyCommand Enter)
