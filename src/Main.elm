@@ -97,7 +97,7 @@ lcd str =
 
 button : String -> Msg -> Element Styles v Msg
 button str msg =
-    el Button
+    El.button Button
         [ width (px buttonSize)
         , height (px buttonSize)
         , onClick msg
