@@ -114,7 +114,7 @@ keySpacing =
 
 
 fontSize =
-    Style.Font.size 20
+    Style.Font.size
 
 
 stylesheet =
@@ -122,9 +122,16 @@ stylesheet =
         [ Style.style Debug
             [ Style.Color.background Color.red ]
         , Style.style Button
-            [ Style.Color.background Color.grey, fontSize, Style.pseudo "active" [ Style.Color.background Color.red ] ]
-        , Style.style LCDLine [ Style.Color.background Color.green, Style.Color.text Color.white, fontSize ]
-        , Style.style LCD [ Style.Color.background Color.grey, fontSize ]
+            [ Style.Color.background Color.grey
+            , fontSize 25
+            , Style.pseudo "active" [ Style.Color.background Color.red ]
+            ]
+        , Style.style LCDLine
+            [ Style.Color.background Color.green
+            , Style.Color.text Color.white
+            , fontSize 20
+            ]
+        , Style.style LCD [ Style.Color.background Color.grey ]
         ]
 
 

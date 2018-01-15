@@ -20003,7 +20003,7 @@ var _user$project$Main$displayInput = function (entry) {
 			return _elm_lang$core$Basics$toString(_p0._0);
 	}
 };
-var _user$project$Main$fontSize = _mdgriffith$style_elements$Style_Font$size(20);
+var _user$project$Main$fontSize = _mdgriffith$style_elements$Style_Font$size;
 var _user$project$Main$keySpacing = 2;
 var _user$project$Main$buttonSize = 70;
 var _user$project$Main$LCD = {ctor: 'LCD'};
@@ -20056,7 +20056,7 @@ var _user$project$Main$stylesheet = _mdgriffith$style_elements$Style$styleSheet(
 					_0: _mdgriffith$style_elements$Style_Color$background(_elm_lang$core$Color$grey),
 					_1: {
 						ctor: '::',
-						_0: _user$project$Main$fontSize,
+						_0: _user$project$Main$fontSize(25),
 						_1: {
 							ctor: '::',
 							_0: A2(
@@ -20084,7 +20084,7 @@ var _user$project$Main$stylesheet = _mdgriffith$style_elements$Style$styleSheet(
 							_0: _mdgriffith$style_elements$Style_Color$text(_elm_lang$core$Color$white),
 							_1: {
 								ctor: '::',
-								_0: _user$project$Main$fontSize,
+								_0: _user$project$Main$fontSize(20),
 								_1: {ctor: '[]'}
 							}
 						}
@@ -20097,11 +20097,7 @@ var _user$project$Main$stylesheet = _mdgriffith$style_elements$Style$styleSheet(
 						{
 							ctor: '::',
 							_0: _mdgriffith$style_elements$Style_Color$background(_elm_lang$core$Color$grey),
-							_1: {
-								ctor: '::',
-								_0: _user$project$Main$fontSize,
-								_1: {ctor: '[]'}
-							}
+							_1: {ctor: '[]'}
 						}),
 					_1: {ctor: '[]'}
 				}
