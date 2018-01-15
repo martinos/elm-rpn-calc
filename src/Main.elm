@@ -89,6 +89,8 @@ lcd str =
     el LCDLine
         [ width (buttonSize * 3 + 2 * keySpacing |> px)
         , height <| px (buttonSize / (2.0) - 1)
+        , padding 3
+        , verticalCenter
         ]
         (str |> text)
 
@@ -104,11 +106,15 @@ button str msg =
 
 
 buttonSize =
-    30
+    70
 
 
 keySpacing =
     2
+
+
+fontSize =
+    Style.Font.size 20
 
 
 stylesheet =
@@ -116,9 +122,9 @@ stylesheet =
         [ Style.style Debug
             [ Style.Color.background Color.red ]
         , Style.style Button
-            [ Style.Color.background Color.grey, Style.Font.size 10 ]
-        , Style.style LCDLine [ Style.Color.background Color.green, Style.Color.text Color.white, Style.Font.size 10 ]
-        , Style.style LCD [ Style.Color.background Color.grey, Style.Font.size 10 ]
+            [ Style.Color.background Color.grey, fontSize ]
+        , Style.style LCDLine [ Style.Color.background Color.green, Style.Color.text Color.white, fontSize ]
+        , Style.style LCD [ Style.Color.background Color.grey, fontSize ]
         ]
 
 
